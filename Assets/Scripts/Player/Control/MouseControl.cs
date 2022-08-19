@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,7 +14,7 @@ namespace Player.Control
 
         private void Update()
         {
-            if (Mouse.current.leftButton.wasPressedThisFrame)
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 ToggleCursor();
             }

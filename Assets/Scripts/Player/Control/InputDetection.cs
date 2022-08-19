@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,24 +11,27 @@ namespace Player.Control
         public static InputEvent<Vector2> onMovement;
         public static InputEvent onJump;
         public static InputEvent onAttack;
-        
+        public static InputEvent<bool> onRun;
+            
         [SerializeField] private InputAction movement;
         [SerializeField] private InputAction jump;
         [SerializeField] private InputAction attack;
-
+        [SerializeField] private InputAction run;
 
         private void OnEnable()
         {
             movement.Enable();
             jump.Enable();
             attack.Enable();
+            run.Enable();
         }
 
         private void OnDisable()
         {
             movement.Disable();
             jump.Disable();
-            attack.Enable();
+            attack.Disable();
+            run.Disable();
         }
 
         private void Update()
@@ -38,11 +40,13 @@ namespace Player.Control
             
             onMovement?.Invoke(movementDir);
 
-            if (jump.IsPressed())
+            if (jump.WasPressedThisFrame())
                 onJump?.Invoke();
             
-            if (attack.IsPressed())
+            if (attack.WasPressedThisFrame())
                 onAttack?.Invoke();
+            
+            onRun?.Invoke(run.IsPressed());
         }
     }
 }

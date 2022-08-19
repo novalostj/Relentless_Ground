@@ -1,10 +1,9 @@
+using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 namespace Player.Control
 {
-    [RequireComponent(typeof(CharacterController))]
+    [RequireComponent(typeof(CharacterController), typeof(PlayerCombat))]
     public class Movement : MonoBehaviour
     {
         public delegate void OnAction();
@@ -13,6 +12,9 @@ namespace Player.Control
         
         [Header("Spec")]
         public float speed = 8f;
+        public float runMultiplier = 2f;
+        public float dashMultiplier = 2.5f;
+        public float dashCooldown = 3f;
         public float gravity = -9.81f;
         public float jumpHeight = 3f;
         public float onLandWait = 0.6f;
@@ -26,11 +28,18 @@ namespace Player.Control
         [HideInInspector] public Vector3 moveDir;
         [HideInInspector] public bool isGrounded;
         [HideInInspector] public Vector3 velocity;
-        private CharacterController _controller;
+        private CharacterController controller;
+        private PlayerCombat playerCombat;
+        private Coroutine dashCoroutine;
         private Vector2 inputDir;
-        private float _timer;
+        private float timer;
+        private float dashTimer;
+        private bool isDashing;
+        private Vector3 lastMoveDir;
         
-        public bool CanMove => _timer <= 0;
+        public bool CanDash => dashTimer <= 0;
+        public bool IsHoldingRun { get; private set; }
+        public bool CanMove => timer <= 0 && (!playerCombat.IsAttacking || isDashing);
         public bool IsMoving => moveDir.magnitude > 0.1f;
         public bool IsFalling => velocity.y < -0.02f;
 
@@ -38,18 +47,23 @@ namespace Player.Control
         {
             InputDetection.onMovement += GetMovementInputs;
             InputDetection.onJump += Jump;
+            InputDetection.onRun += Run;
+            PlayerCombat.attackV3Float += Dash;
         }
 
         private void OnDisable()
         {
             InputDetection.onMovement -= GetMovementInputs;
-            InputDetection.onJump += Jump;
+            InputDetection.onJump -= Jump;
+            InputDetection.onRun -= Run;
+            PlayerCombat.attackV3Float -= Dash;
         }
 
         private void Start()
         {
-            _timer = 0f;
-            _controller = GetComponent<CharacterController>();
+            timer = 0f;
+            playerCombat = GetComponent<PlayerCombat>();
+            controller = GetComponent<CharacterController>();
         }
 
         private void OnDrawGizmosSelected()
@@ -59,7 +73,7 @@ namespace Player.Control
 
         private void Update()
         {
-            _timer = Mathf.Clamp(_timer - Time.deltaTime, 0, 20);
+            SetupTimer(Time.deltaTime);
 
             moveDir =
                 (cameraAnchor ? cameraAnchor.right : transform.right) * inputDir.x +
@@ -74,12 +88,27 @@ namespace Player.Control
 
         private void FixedUpdate()
         {
-            velocity.y += gravity * Time.fixedDeltaTime;
+            velocity.y = isDashing ? 0 : velocity.y + gravity * Time.fixedDeltaTime;
 
-            Vector3 movementDirection = CanMove ? moveDir.normalized : new();
+            Vector3 movementDirection = 
+                isDashing ? lastMoveDir : 
+                CanMove ? moveDir.normalized : new();
+
+            float newSpeed = 
+                isDashing ? speed * dashMultiplier : 
+                IsHoldingRun ? speed * runMultiplier : speed;
             
-            _controller.Move(velocity + movementDirection * (speed * Time.fixedDeltaTime));
+            Move(velocity + movementDirection * (newSpeed * Time.fixedDeltaTime));
         }
+
+        private void SetupTimer(float deltaTime)
+        {
+            timer = Mathf.Clamp(timer - deltaTime, 0, 20);
+            dashTimer = Mathf.Clamp(dashTimer - deltaTime, 0, dashCooldown);
+        }
+
+        private void Move(Vector3 motion) => controller.Move(motion);
+        public void ApplyMotion(Vector3 motion) => velocity += motion;
 
         private void CheckFloor(bool checkFloor)
         {
@@ -88,10 +117,10 @@ namespace Player.Control
             if (velocity.y < 0)
                 velocity.y = -0.01f;
             
-            if (!isGrounded)
+            if (!isGrounded && !playerCombat.IsAttacking)
             {
                 onLand?.Invoke();
-                _timer = onLandWait;
+                timer = onLandWait;
             }
         }
 
@@ -103,6 +132,38 @@ namespace Player.Control
             
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             onJump?.Invoke();
+        }
+
+        private void Run(bool value)
+        {
+            if (!CanMove || !isGrounded)
+            {
+                if (!value) IsHoldingRun = false;
+                return;
+            }
+            
+            IsHoldingRun = value;
+        }
+
+        private void Dash(float time)
+        {
+            isDashing = true;
+            lastMoveDir = (cameraAnchor ? cameraAnchor.right : transform.right) * inputDir.x +
+                          (cameraAnchor ? cameraAnchor.forward : transform.forward) * inputDir.y;;
+            dashTimer = dashCooldown;
+            dashCoroutine = StartCoroutine(IEDashTime(time));
+        }
+
+        private IEnumerator IEDashTime(float time)
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(time);
+                isDashing = false;
+                StopCoroutine(dashCoroutine);
+            }
+            
+            // ReSharper disable once IteratorNeverReturns
         }
     }
 }

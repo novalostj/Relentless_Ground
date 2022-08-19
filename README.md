@@ -1,5 +1,5 @@
 ## 2.5D-ThirdPerson-Unity-Base
-This is my base 2.5D Thirdperson unity
+I used this for my base (https://github.com/novalostj/2.5D-ThirdPerson-Unity-Base).
 
 # Credits:
 1. https://szadiart.itch.io/rogue-fantasy-catacombs
