@@ -18,6 +18,8 @@ namespace Player.Control
         [SerializeField] private InputAction attack;
         [SerializeField] private InputAction run;
 
+        private Vector2 movementInputVector2;
+        
         private void OnEnable()
         {
             movement.Enable();
@@ -36,9 +38,9 @@ namespace Player.Control
 
         private void Update()
         {
-            Vector2 movementDir = movement.ReadValue<Vector2>();
+            movementInputVector2 = movement.ReadValue<Vector2>();
             
-            onMovement?.Invoke(movementDir);
+            onMovement?.Invoke(movementInputVector2);
 
             if (jump.WasPressedThisFrame())
                 onJump?.Invoke();

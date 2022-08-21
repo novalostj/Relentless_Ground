@@ -54,7 +54,7 @@ namespace Player.Animations
             CorrectSpriteForward();
             SetDirections();
             
-            float moveMagnitude = movement.moveDir.magnitude;
+            float moveMagnitude = movement.InputMoveDirection.magnitude;
             animator.SetFloat(Speed, moveMagnitude);
             animator.SetBool(Falling, movement.IsFalling && !playerCombat.IsAttacking);
             animator.SetBool(IsAttacking, playerCombat.IsAttacking);
@@ -79,7 +79,7 @@ namespace Player.Animations
         {
             if (!movement.IsMoving || !movement.CanMove) return;
         
-            orientation.LookAt(orientation.position + movement.moveDir);
+            orientation.LookAt(orientation.position + movement.InputMoveDirection);
         }
     }
 }

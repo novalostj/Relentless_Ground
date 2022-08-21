@@ -24,24 +24,25 @@ namespace Player.Control
         public Transform cameraAnchor;
         public float groundDistance = 0.4f;
         public LayerMask groundLayer;
-    
-        [HideInInspector] public Vector3 moveDir;
-        [HideInInspector] public bool isGrounded;
-        [HideInInspector] public Vector3 velocity;
+        
         private CharacterController controller;
         private PlayerCombat playerCombat;
         private Coroutine dashCoroutine;
-        private Vector2 inputDir;
         private float timer;
         private float dashTimer;
         private bool isDashing;
         private Vector3 lastMoveDir;
+        private Vector2 inputDir;
         
+        public Vector3 InputMoveDirection { get; private set; }
+        public Vector3 MovementDirection { get; private set; }
+        public bool IsGrounded { get; private set; }
+        public Vector3 Velocity { get; private set; }
         public bool CanDash => dashTimer <= 0;
         public bool IsHoldingRun { get; private set; }
         public bool CanMove => timer <= 0 && (!playerCombat.IsAttacking || isDashing);
-        public bool IsMoving => moveDir.magnitude > 0.1f;
-        public bool IsFalling => velocity.y < -0.02f;
+        public bool IsMoving => InputMoveDirection.magnitude > 0.2f;
+        public bool IsFalling => Velocity.y < -0.02f;
 
         private void OnEnable()
         {
@@ -75,7 +76,7 @@ namespace Player.Control
         {
             SetupTimer(Time.deltaTime);
 
-            moveDir =
+            InputMoveDirection =
                 (cameraAnchor ? cameraAnchor.right : transform.right) * inputDir.x +
                 (cameraAnchor ? cameraAnchor.forward : transform.forward) * inputDir.y;
 
@@ -83,22 +84,22 @@ namespace Player.Control
             
             CheckFloor(checkFloor);
             
-            isGrounded = checkFloor;
+            IsGrounded = checkFloor;
         }
 
         private void FixedUpdate()
         {
-            velocity.y = isDashing ? 0 : velocity.y + gravity * Time.fixedDeltaTime;
+            SetVelocityY(isDashing ? 0 : Velocity.y + gravity * Time.fixedDeltaTime);
 
-            Vector3 movementDirection = 
+            MovementDirection = 
                 isDashing ? lastMoveDir : 
-                CanMove ? moveDir.normalized : new();
+                CanMove ? InputMoveDirection.normalized : new();
 
             float newSpeed = 
                 isDashing ? speed * dashMultiplier : 
                 IsHoldingRun ? speed * runMultiplier : speed;
             
-            Move(velocity + movementDirection * (newSpeed * Time.fixedDeltaTime));
+            Move(Velocity + MovementDirection * (newSpeed * Time.fixedDeltaTime));
         }
 
         private void SetupTimer(float deltaTime)
@@ -108,16 +109,16 @@ namespace Player.Control
         }
 
         private void Move(Vector3 motion) => controller.Move(motion);
-        public void ApplyMotion(Vector3 motion) => velocity += motion;
+        public void ApplyMotion(Vector3 motion) => Velocity += motion;
 
         private void CheckFloor(bool checkFloor)
         {
             if (!checkFloor) return;
-                
-            if (velocity.y < 0)
-                velocity.y = -0.01f;
+
+            if (Velocity.y < 0)
+                SetVelocityY(-0.01f);
             
-            if (!isGrounded && !playerCombat.IsAttacking)
+            if (!IsGrounded && !playerCombat.IsAttacking)
             {
                 onLand?.Invoke();
                 timer = onLandWait;
@@ -128,15 +129,15 @@ namespace Player.Control
 
         private void Jump()
         {
-            if (!CanMove || !isGrounded) return;
+            if (!CanMove || !IsGrounded) return;
             
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            SetVelocityY(Mathf.Sqrt(jumpHeight * -2f * gravity));
             onJump?.Invoke();
         }
 
         private void Run(bool value)
         {
-            if (!CanMove || !isGrounded)
+            if (!CanMove || !IsGrounded)
             {
                 if (!value) IsHoldingRun = false;
                 return;
@@ -165,5 +166,9 @@ namespace Player.Control
             
             // ReSharper disable once IteratorNeverReturns
         }
+
+        private void SetVelocityY(float value) => Velocity = new Vector3(Velocity.x, value, Velocity.z);
+        private void SetVelocityX(float value) => Velocity = new Vector3(value, Velocity.y, Velocity.z);
+        private void SetVelocityZ(float value) => Velocity = new Vector3(Velocity.x, Velocity.y, value);
     }
 }
