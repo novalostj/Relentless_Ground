@@ -1,4 +1,4 @@
-using System.Collections;
+    using System.Collections;
 using Combat;
 using UnityEngine;
 using UnityEngine.Events;
@@ -9,8 +9,10 @@ namespace Enemy.AI
     {
         [SerializeField] private float hitInvulnerableTime = 0.4f;
         [SerializeField] private float distanceToAttack = 2f;
+        [SerializeField] private float applyDamageOn = 0.9f;
         [SerializeField] private float attackDelay = 1.1f;
         [SerializeField] private float attackCooldown = 2f;
+        [SerializeField] private float attackRotateSpeed = 2f;
 
         private BaseAI baseAI;
         private EyeSight eyeSight;
@@ -18,21 +20,28 @@ namespace Enemy.AI
         [HideInInspector]
         public UnityEvent hit, hitOver, onAttack, onAttackFinish;
 
-        private Coroutine cAttack, cHalt;
+        private Targets targets;
+        private Coroutine cAttack, cHalt, cooldown;
         
         public bool CanAttack { get; private set; } = true;
         public bool IsAttacking { get; private set; }
         public bool Vulnerable { get; private set; } = true;
+        
+        private bool rotateToTarget;
+        
+        
 
         private void Start()
         {
             baseAI = GetComponent<BaseAI>();
             eyeSight = GetComponentInChildren<EyeSight>();
+            targets = GetComponentInChildren<Targets>();
         }
 
         private void Update()
         {
             TargetInRangeCheck();
+            RotateToTarget(eyeSight.Target);
         }
 
         private void TargetInRangeCheck()
@@ -49,11 +58,29 @@ namespace Enemy.AI
             CanAttack = false;
             onAttack?.Invoke();
             cHalt = StartCoroutine(baseAI.Halt(attackDelay));
+            rotateToTarget = true;
+            //ApplyDamage
+            yield return new WaitForSeconds(applyDamageOn);
+            targets.ApplyDamage(20);
+            rotateToTarget = false;
             
-            yield return new WaitForSeconds(attackDelay);
+            //Attack Is Over
+            yield return new WaitForSeconds(attackDelay - applyDamageOn);
             onAttackFinish?.Invoke();
             IsAttacking = false;
-            StartCoroutine(Cooldown());
+            cooldown = StartCoroutine(Cooldown());
+        }
+
+        private void RotateToTarget(Transform target)
+        {
+            if (!rotateToTarget) return;
+            
+            Vector3 fp = transform.up;
+            Vector3 sp = target.position - transform.position;
+
+            float angle = Vector3.SignedAngle(fp, sp, transform.forward);
+
+            transform.Rotate(0, -angle * attackRotateSpeed * Time.deltaTime,0);
         }
 
         private IEnumerator Cooldown()
@@ -62,7 +89,7 @@ namespace Enemy.AI
             CanAttack = true;
         }
 
-        public void ReceiveDamage()
+        public void ReceiveDamage(float value)
         {
             if (!Vulnerable) return;
 
@@ -84,6 +111,8 @@ namespace Enemy.AI
 
         private IEnumerator HitIsOverTimer()
         {
+            if (cooldown != null) StopCoroutine(cooldown);
+            
             yield return new WaitForSeconds(hitInvulnerableTime);
             CanAttack = true;
             Vulnerable = true;

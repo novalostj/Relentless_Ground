@@ -7,16 +7,25 @@ namespace Player.Control
     {
         public delegate void InputEvent<T>(T value);
         public delegate void InputEvent();
-        
+
         public static InputEvent<Vector2> onMovement;
-        public static InputEvent onJump;
-        public static InputEvent onAttack;
         public static InputEvent<bool> onRun;
-            
-        [SerializeField] private InputAction movement;
-        [SerializeField] private InputAction jump;
-        [SerializeField] private InputAction attack;
-        [SerializeField] private InputAction run;
+        public static InputEvent<int> ability;
+        public static InputEvent
+            onJump,
+            onAttack,
+            onSecondAttack;
+
+        [SerializeField] private InputAction
+            movement,
+            jump,
+            run,
+            attack,
+            secondAttack,
+            ability1,
+            ability2,
+            ability3,
+            ability4;
 
         private Vector2 movementInputVector2;
         
@@ -26,6 +35,7 @@ namespace Player.Control
             jump.Enable();
             attack.Enable();
             run.Enable();
+            secondAttack.Enable();
         }
 
         private void OnDisable()
@@ -34,6 +44,7 @@ namespace Player.Control
             jump.Disable();
             attack.Disable();
             run.Disable();
+            secondAttack.Disable();
         }
 
         private void Update()
@@ -44,10 +55,19 @@ namespace Player.Control
 
             if (jump.WasPressedThisFrame())
                 onJump?.Invoke();
-            
             if (attack.WasPressedThisFrame())
                 onAttack?.Invoke();
-            
+            if (secondAttack.WasPressedThisFrame())
+                onSecondAttack?.Invoke();
+            if (ability1.WasPressedThisFrame())
+                ability?.Invoke(1);
+            if (ability2.WasPressedThisFrame())
+                ability?.Invoke(2);
+            if (ability3.WasPressedThisFrame())
+                ability?.Invoke(3);
+            if (ability4.WasPressedThisFrame())
+                ability?.Invoke(4);
+                
             onRun?.Invoke(run.IsPressed());
         }
     }

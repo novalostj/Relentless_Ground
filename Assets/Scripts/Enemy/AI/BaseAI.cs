@@ -6,11 +6,10 @@ namespace Enemy.AI
 {
     public class BaseAI : MonoBehaviour
     {
-        public Transform target;
-
         [SerializeField] private float goInterval = 0.2f;
         [SerializeField] private float minimumDistance = 2f;
 
+        private Transform Target => eyeSight.Target;
         private BaseCombat baseCombat;
         private NavMeshAgent agent;
         private EyeSight eyeSight;
@@ -60,7 +59,7 @@ namespace Enemy.AI
             {
                 yield return new WaitForSeconds(goInterval);
                 
-                if (eyeSight.isAgro && !agent.isStopped) GoToPath(target.position);
+                if (eyeSight.isAgro && !agent.isStopped) GoToPath(Target.position);
             }
             
             // ReSharper disable once IteratorNeverReturns
@@ -68,7 +67,7 @@ namespace Enemy.AI
 
         private void FacePlayer()
         {
-            transform.LookAt(target);
+            transform.LookAt(Target);
         }
 
         public void SetAgentState(bool value) => agent.isStopped = value;

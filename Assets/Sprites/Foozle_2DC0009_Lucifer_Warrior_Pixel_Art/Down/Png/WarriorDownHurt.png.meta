@@ -140,7 +140,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: WarriorDownAttack01_0
+      name: WarriorDownHurt_0
       rect:
         serializedVersion: 2
         x: 0
@@ -154,14 +154,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c87b7d48e3a430b4fbb1e37368cba50e
-      internalID: 772151367
+      spriteID: 7b353a7c5aa4f9c06a2f69a0a5df2dbc
+      internalID: -268540118
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: WarriorDownAttack01_1
+      name: WarriorDownHurt_1
       rect:
         serializedVersion: 2
         x: 48
@@ -175,14 +175,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4191ec4b2ce4fe34c9e75a00a3b4cafd
-      internalID: -468690352
+      spriteID: c7131361d7b9d00e89441bd599a55d10
+      internalID: -325243080
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: WarriorDownAttack01_2
+      name: WarriorDownHurt_2
       rect:
         serializedVersion: 2
         x: 96
@@ -196,14 +196,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fb910ff8067bbb546af4c633b7022743
-      internalID: 1163293478
+      spriteID: e0130fe9ed78aa217929ee5c1e9144e6
+      internalID: -1314529230
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: WarriorDownAttack01_3
+      name: WarriorDownHurt_3
       rect:
         serializedVersion: 2
         x: 144
@@ -217,50 +217,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7b7129359ff3dfa4e974020988606034
-      internalID: -143567220
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: WarriorDownAttack01_4
-      rect:
-        serializedVersion: 2
-        x: 192
-        y: 0
-        width: 48
-        height: 48
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 83719fa36554a384ca5b02fd0147152f
-      internalID: 956332994
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: WarriorDownAttack01_5
-      rect:
-        serializedVersion: 2
-        x: 240
-        y: 0
-        width: 48
-        height: 48
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d53a1cb9657dbeb419ef0b29d222c16a
-      internalID: -1624859609
+      spriteID: 66d23217be0c1f738a09c368f5a19f8c
+      internalID: -144256566
       vertices: []
       indices: 
       edges: []
@@ -276,12 +234,10 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      WarriorDownAttack01_4: 956332994
-      WarriorDownAttack01_0: 772151367
-      WarriorDownAttack01_5: -1624859609
-      WarriorDownAttack01_2: 1163293478
-      WarriorDownAttack01_1: -468690352
-      WarriorDownAttack01_3: -143567220
+      WarriorDownHurt_2: -1314529230
+      WarriorDownHurt_0: -268540118
+      WarriorDownHurt_3: -144256566
+      WarriorDownHurt_1: -325243080
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

@@ -1,4 +1,3 @@
-using System;
 using Player.Control;
 using UnityEngine;
 
@@ -44,5 +43,6 @@ namespace _2._5D_Objects
             
             transform.localPosition = currentForward;
         }
+        
     }
 }

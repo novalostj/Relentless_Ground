@@ -1,43 +1,47 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using Player.Control;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Combat
 {
     public interface ITargetable
     {
-        public void ReceiveDamage();
+        public void ReceiveDamage(float value);
     }
 
     public class Targets : MonoBehaviour
     {
         [SerializeField] private List<string> targetTags;
-        public UnityEvent onAttack;
-        
-        
+        private List<ITargetable> targetsList = new List<ITargetable>();
+
+
         private void OnTriggerEnter(Collider other)
         {
-            if (!IsInTargetList(other.tag)) return;
+            if (!IsTargetInList(other.tag)) return;
             
             ITargetable target = other.GetComponent<ITargetable>(); 
-            onAttack.AddListener(target.ReceiveDamage);
+            targetsList.Add(target);
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (!IsInTargetList(other.tag)) return;
+            if (!IsTargetInList(other.tag)) return;
 
             ITargetable target = other.GetComponent<ITargetable>();
-            onAttack.RemoveListener(target.ReceiveDamage);
+            targetsList.Remove(target);
         }
 
-        private bool IsInTargetList(string targetTag)
+        private bool IsTargetInList(string targetTag)
         {
             foreach (var sTargetTag in targetTags) if (targetTag == sTargetTag) return true;
             return false;
+        }
+
+        public void ApplyDamage(float value)
+        {
+            if (targetsList.Count == 0) return;
+            
+            foreach (var target in targetsList)
+                target.ReceiveDamage(value);
         }
     }
 }

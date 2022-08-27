@@ -26,6 +26,8 @@ namespace Player.Animations
         private static readonly int OnAttackV3 = Animator.StringToHash("OnAttack_V3");
         private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
         private static readonly int IsHoldingRun = Animator.StringToHash("IsHoldingRun");
+        private static readonly int Hit = Animator.StringToHash("OnHit");
+        private static readonly int Stand = Animator.StringToHash("OnStand");
 
         #endregion
         
@@ -33,20 +35,24 @@ namespace Player.Animations
         {
             Movement.onJump += OnJump;
             Movement.onLand += OnLand;
-            PlayerCombat.attackV1 += OnAttack_V1;
-            PlayerCombat.attackV2 += OnAttack_V2;
-            PlayerCombat.attackV3 += OnAttack_V3;
+            Movement.onStand += OnStand;
+            PlayerCombat.playerCombatV1 += OnAttack_V1;
+            PlayerCombat.playerCombatV2 += OnAttack_V2;
+            PlayerCombat.playerCombatV3 += OnAttack_V3;
             PlayerCombat.onFinished += OnFinishedAttacking;
+            PlayerCombat.onHit += OnHit;
         }
 
         private void OnDisable()
         {
             Movement.onJump -= OnJump;
             Movement.onLand -= OnLand;
-            PlayerCombat.attackV1 -= OnAttack_V1;
-            PlayerCombat.attackV2 -= OnAttack_V2;
-            PlayerCombat.attackV3 -= OnAttack_V3;
+            Movement.onStand -= OnStand;
+            PlayerCombat.playerCombatV1 -= OnAttack_V1;
+            PlayerCombat.playerCombatV2 -= OnAttack_V2;
+            PlayerCombat.playerCombatV3 -= OnAttack_V3;
             PlayerCombat.onFinished -= OnFinishedAttacking;
+            PlayerCombat.onHit -= OnHit;
         }
 
         private void Update()
@@ -68,7 +74,9 @@ namespace Player.Animations
         private void OnAttack_V1() => animator.SetTrigger(OnAttackV1);
         private void OnAttack_V2() => animator.SetTrigger(OnAttackV2);
         private void OnAttack_V3() => animator.SetTrigger(OnAttackV3);
-
+        private void OnHit() => animator.SetTrigger(Hit);
+        private void OnStand() => animator.SetTrigger(Stand);
+        
         private void SetDirections()
         {
             animator.SetFloat(Front, spriteRotation.Front);
