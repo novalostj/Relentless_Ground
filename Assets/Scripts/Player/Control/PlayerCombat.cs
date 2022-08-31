@@ -25,25 +25,26 @@ namespace Player.Control
 
         [SerializeField] private float onAttackTime = 0.7f;
         [SerializeField] private float hitTime = 0.4f;
-        
-        [Header("Slash")]
+
+        [Header("Slash")] 
         [SerializeField] private float slashCooldown = 1f;
-        [SerializeField] private float applyDamageOn = 0.2f;
+        [SerializeField] private float applySlashDamageOn = 0.2f;
         [SerializeField] private float slashCost = 10f;
-        
-        [Header("Slam")]
+
+        [Header("Slam")] 
         [SerializeField] private float slamCooldown = 3f;
         [SerializeField] private float slamWeight = -0.5f;
         [SerializeField] private float slamCost = 25f;
-        
-        [Header("Dash")]
+        [SerializeField] private float applySlamDamageOn = 0.4f;
+
+        [Header("Dash")] 
         [SerializeField] private float dashCooldown = 3f;
         [SerializeField] private float onDashTime = 0.4f;
         [SerializeField] private float dashCost = 40f;
 
         private Movement movement;
         private float timer, dashTimer;
-        private Coroutine applyForwardDamage;
+        private Coroutine applyForwardDamage, vulnerableInBetween;
 
         public bool IsAttacking => timer > 0;
         public bool IsDashing => dashTimer > 0;
@@ -107,8 +108,9 @@ namespace Player.Control
                 
                 timer = onAttackTime;
                 playerCombatV1?.Invoke();
-                applyForwardDamage = StartCoroutine(ApplyForwardDamageOn(applyDamageOn));
+                applyForwardDamage = StartCoroutine(ApplyForwardDamageOn(applySlashDamageOn));
                 StartCoroutine(SlashTimer(slashCooldown));
+                vulnerableInBetween = StartCoroutine(InvulnerableInBetween(applySlashDamageOn, onAttackTime));
             }
             else if (CanAttackV2)
             {
@@ -120,9 +122,24 @@ namespace Player.Control
                 movement.ApplyMotion(new Vector3(0, slamWeight, 0));
                 playerCombatV2?.Invoke();
                 
-                StartCoroutine(ApplyCenterDamageOn(applyDamageOn));
+                StartCoroutine(ApplyCenterDamageOn(applySlamDamageOn));
                 StartCoroutine(SlamTimer(slamCooldown));
+                vulnerableInBetween = StartCoroutine(InvulnerableInBetween(applySlamDamageOn, onAttackTime));
             }
+        }
+
+        private IEnumerator InvulnerableInBetween(float start, float after)
+        {
+            if (start > after)
+            {
+                Debug.Log($"Start Is Bigger Than After {this}");
+                yield break;
+            }
+
+            yield return new WaitForSeconds(start);
+            Vulnerable = false;
+            yield return new WaitForSeconds(start - after);
+            Vulnerable = true;
         }
 
         private void SecondAttack()
@@ -208,7 +225,8 @@ namespace Player.Control
             if (!Vulnerable) return;
             
             if (applyForwardDamage != null) StopCoroutine(applyForwardDamage);
-            if (movement.fallToStand != null) StopCoroutine(movement.fallToStand);
+            if (movement.fallToStand != null) movement.StopCoroutine(movement.fallToStand);
+            if (vulnerableInBetween != null) StopCoroutine(vulnerableInBetween);
             
             onHit?.Invoke();
             onHitFloat?.Invoke(value);

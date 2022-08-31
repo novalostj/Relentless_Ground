@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93adf64fa8ba4a5abbcf9881963af4ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  alwaysTargetPlayer: 1
   targetTag: PlayerTarget
   sightDistance: 35
   collisionMasks:
@@ -370,6 +371,7 @@ MonoBehaviour:
   spriteRotation: {fileID: 7401073745355531268}
   animator: {fileID: 7401073744654283891}
   agent: {fileID: 7401073745867051248}
+  baseAI: {fileID: 7401073745867051250}
 --- !u!114 &7401073745867051250
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -382,8 +384,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb2bbf77ed784c89ebd02802ba7b85de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scriptableStatus: {fileID: 11400000, guid: 4c988860672c03879a64bdf1429e6983, type: 2}
   goInterval: 0.2
   minimumDistance: 2
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &7401073745867051251
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -400,8 +406,12 @@ MonoBehaviour:
   distanceToAttack: 2
   applyDamageOn: 0.9
   attackDelay: 1.1
-  attackCooldown: 0
+  attackCooldownMinimum: 1
+  attackCooldownMaximum: 1.5
   attackRotateSpeed: 2
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 128
   hit:
     m_PersistentCalls:
       m_Calls: []

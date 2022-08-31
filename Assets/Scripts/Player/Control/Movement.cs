@@ -16,7 +16,8 @@ namespace Player.Control
         public static OnAction<float> onJumpFloat;
         public static OnAction onLand;
         public static OnAction onStand;
-        
+
+
         [Header("Spec")]
         [SerializeField] private float speed = 8f;
         [SerializeField] private float runMultiplier = 2f;
@@ -168,7 +169,7 @@ namespace Player.Control
 
         private void Jump()
         {
-            if (!CanMove) return;
+            if (!CanMove || isDashing) return;
 
             if (!IsGrounded)
             {

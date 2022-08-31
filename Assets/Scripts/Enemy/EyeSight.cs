@@ -6,6 +6,7 @@ namespace Enemy
 {
     public class EyeSight : MonoBehaviour
     {
+        [SerializeField] private bool alwaysTargetPlayer;
         [SerializeField] private string targetTag = "Player";
         
         public float sightDistance = 5f;
@@ -45,12 +46,14 @@ namespace Enemy
             {
                 agroChecker = isAgro = true;
             }
-            else if (agroChecker)
+            else if (agroChecker || !alwaysTargetPlayer)
             {
                 agroChecker = false;
                 if (AgroCoroutine != null) StopCoroutine(AgroTimer());
                 AgroCoroutine = StartCoroutine(AgroTimer());
             }
+            
+            if (alwaysTargetPlayer) isAgro = true;
         }
 
         private bool InSight()

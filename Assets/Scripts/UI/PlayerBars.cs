@@ -18,7 +18,7 @@ namespace UI
 
         private void UpdateBars()
         {
-            health.fillAmount = playerStatus.Health / playerStatus.MaxHealth;
+            health.fillAmount = playerStatus.Health / playerStatus.maxHealth;
             energy.fillAmount = playerStatus.Energy / playerStatus.MaxEnergy;
             stamina.fillAmount = playerStatus.Stamina / playerStatus.MaxStamina;
         }

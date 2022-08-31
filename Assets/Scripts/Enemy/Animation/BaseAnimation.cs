@@ -12,6 +12,7 @@ namespace Enemy.Animation
         public SpriteRotation spriteRotation;
         public Animator animator;
         public NavMeshAgent agent;
+        public BaseAI baseAI;
         
         private static readonly int Front = Animator.StringToHash("Front");
         private static readonly int Side = Animator.StringToHash("Side");
@@ -20,13 +21,15 @@ namespace Enemy.Animation
         private static readonly int HitOver = Animator.StringToHash("OnHitOver");
         private static readonly int Attack = Animator.StringToHash("OnAttack");
         private static readonly int AttackFinish = Animator.StringToHash("OnAttackFinish");
+        private static readonly int Death = Animator.StringToHash("OnDeath");
 
         private void OnEnable()
         {
-            baseCombat.hit.AddListener(OnHit);
+            baseCombat.hit.AddListener(OnHit);  
             baseCombat.hitOver.AddListener(OnHitOver);
             baseCombat.onAttack.AddListener(OnAttack);
             baseCombat.onAttackFinish.AddListener(OnAttackFinish);
+            baseAI.onDeath.AddListener(OnDeath);
         }
 
         private void OnDisable()
@@ -35,6 +38,7 @@ namespace Enemy.Animation
             baseCombat.hitOver.RemoveListener(OnHitOver);
             baseCombat.onAttack.RemoveListener(OnAttack);
             baseCombat.onAttackFinish.RemoveListener(OnAttackFinish);
+            baseAI.onDeath.RemoveListener(OnDeath);
         }
         
         private void Update()
@@ -49,12 +53,12 @@ namespace Enemy.Animation
             animator.SetFloat(Front, spriteRotation.Front);
             animator.SetFloat(Side, spriteRotation.Side);
         }
+        
 
         private void OnHit() => animator.SetTrigger(Hit);
-
         private void OnHitOver() => animator.SetTrigger(HitOver);
         private void OnAttack() => animator.SetTrigger(Attack);
         private void OnAttackFinish() => animator.SetTrigger(AttackFinish);
-
+        private void OnDeath() => animator.SetTrigger(Death);
     }
 }

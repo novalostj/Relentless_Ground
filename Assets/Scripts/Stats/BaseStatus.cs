@@ -6,21 +6,19 @@ namespace Stats
 {
     public class BaseStatus : ScriptableObject
     {
-        private float health;
+        public float maxHealth = 100f;
+        
+        public float Health { get; protected set; }
 
-        public float MaxHealth => 100f;
-        
-        public float Health => health;
-        
 
         public virtual void AddHealth(float value)
         {
-            health = Mathf.Clamp(value + health, 0, MaxHealth);
+            Health = Mathf.Clamp(value + Health, 0, maxHealth);
         }
 
         public virtual void OnStart()
         {
-            health = MaxHealth;
+            Health = maxHealth;
         }
     }
 }
