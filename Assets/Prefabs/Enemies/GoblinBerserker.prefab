@@ -342,7 +342,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 7401073745867051246}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.35
   m_Speed: 8
   m_Acceleration: 8
   avoidancePriority: 50
@@ -354,7 +354,7 @@ NavMeshAgent:
   m_Height: 2
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 2
+  m_ObstacleAvoidanceType: 1
 --- !u!114 &7401073745867051247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -367,11 +367,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef4ccc21e1067e6b490f17e3d6fd2f0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseCombat: {fileID: 3411924027339570085}
-  spriteRotation: {fileID: 7401073745355531268}
-  animator: {fileID: 7401073744654283891}
-  agent: {fileID: 7401073745867051248}
-  baseAI: {fileID: 7401073745867051250}
 --- !u!114 &7401073745867051250
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -432,12 +427,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7d97c8219d445468dbfde52b12d04fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseAttack:
+    distanceToAttack: 2
+    applyDamageOn: []
+    howLongIsAttack: 1.1
+    attackCooldownMinimum: 2
+    attackCooldownMaximum: 4
+    damage: 20
+    localAttackPosition: {x: 0, y: 0, z: 0}
   hitInvulnerableTime: 0.4
-  distanceToAttack: 5
-  applyDamageOn: 0.7
-  attackDelay: 1
-  attackCooldownMinimum: 1
-  attackCooldownMaximum: 2.5
   attackRotateSpeed: 0
   targetLayer:
     serializedVersion: 2
@@ -454,5 +452,14 @@ MonoBehaviour:
   onAttackFinish:
     m_PersistentCalls:
       m_Calls: []
-  leapStrength: 10
-  leapOnTime: 0.3
+  berserkAttack:
+    distanceToAttack: 2
+    applyDamageOn:
+    - 0.7
+    howLongIsAttack: 1.1
+    attackCooldownMinimum: 2
+    attackCooldownMaximum: 4
+    damage: 20
+    localAttackPosition: {x: 0, y: 0, z: 0}
+    leapStrength: 10
+    leapOnTime: 0.3

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,6 +7,9 @@ namespace Combat
     public interface ITargetable
     {
         public void ReceiveDamage(float value);
+        public void ForceReceiveDamage(float value);
+        public void DisableMovement(float time);
+        public IEnumerator DisableMovementCoroutine(float time);
     }
 
     public class Targets : MonoBehaviour

@@ -1,4 +1,5 @@
 using System.Collections;
+using Enemy.AI.NewCombat;
 using Stats;
 using UnityEngine;
 using UnityEngine.AI;
@@ -17,12 +18,11 @@ namespace Enemy.AI
         public void AddHealth(float value)
         {
             Health = Mathf.Clamp(value + Health, 0, maxHealth);
-            
             if (Health == 0)
                 death?.Invoke();
         }
         
-        public virtual void OnStart()
+        public void OnStart()
         {
             Health = maxHealth;
         }
@@ -40,40 +40,23 @@ namespace Enemy.AI
         [SerializeField] private EnemyStatus scriptableStatus;
         [SerializeField] private float goInterval = 0.2f;
         [SerializeField] private float minimumDistance = 2f;
-
-        private Transform Target => eyeSight.Target;
-        private BaseCombat baseCombat;
+        
+        private ReBaseCombat oldReBaseCombat;
         private NavMeshAgent agent;
         private EyeSight eyeSight;
-        private EnemyStatusCopy enemyStatus;
+        public EnemyStatusCopy EnemyStatus { get; private set; }
 
         [HideInInspector]
         public UnityEvent onDeath;
         
         public bool IsDead { get; private set; }
 
-        private void OnEnable()
-        {
-            if (baseCombat)
-            {
-                baseCombat.hit.AddListener(FacePlayer);
-            }
-        }
-
-        private void OnDisable()
-        {
-            if (baseCombat)
-            {
-                baseCombat.hit.RemoveListener(FacePlayer);
-            }
-        }
-
+        
         protected virtual void Start()
         {
-            enemyStatus = new(scriptableStatus);
-            enemyStatus.death.AddListener(Dead);
-            baseCombat = GetComponent<BaseCombat>();
-            baseCombat.hit.AddListener(FacePlayer);
+            EnemyStatus = new(scriptableStatus);
+            EnemyStatus.death.AddListener(Dead);
+            oldReBaseCombat = GetComponent<ReBaseCombat>();
             
             eyeSight = GetComponentInChildren<EyeSight>();
             agent = GetComponent<NavMeshAgent>();
@@ -105,29 +88,24 @@ namespace Enemy.AI
             {
                 yield return new WaitForSeconds(goInterval);
                 
-                if (eyeSight.isAgro && !agent.isStopped) GoToPath(Target.position);
+                if (eyeSight.isAgro && !agent.isStopped) GoToPath(eyeSight.Target.position);
             }
             
             // ReSharper disable once IteratorNeverReturns
-        }
-
-        private void FacePlayer()
-        {
-            transform.LookAt(Target);
         }
 
         public void SetAgentState(bool value) => agent.isStopped = value;
 
         public void ReceiveDamage(float value)
         {
-            enemyStatus.AddHealth(-value);
+            EnemyStatus.AddHealth(-value);
         }
 
         private void Dead()
         {
             IsDead = true;
             agent.isStopped = true;
-            StartCoroutine(WaitThenDeath(baseCombat.HitInvulnerableTime));
+            StartCoroutine(WaitThenDeath(oldReBaseCombat.HitInvulnerableTime));
         }
 
         private IEnumerator WaitThenDeath(float time)

@@ -1,6 +1,8 @@
 using System;
 using _2._5D_Objects;
 using Enemy.AI;
+using Enemy.AI.Combat;
+using Enemy.AI.NewCombat;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,11 +10,11 @@ namespace Enemy.Animation
 {
     public class BaseAnimation : MonoBehaviour
     {
-        public BaseCombat baseCombat;
-        public SpriteRotation spriteRotation;
-        public Animator animator;
-        public NavMeshAgent agent;
-        public BaseAI baseAI;
+        private ReBaseCombat reBaseCombat;
+        private SpriteRotation spriteRotation;
+        private Animator animator;
+        private NavMeshAgent agent;
+        private BaseAI baseAI;
         
         private static readonly int Front = Animator.StringToHash("Front");
         private static readonly int Side = Animator.StringToHash("Side");
@@ -22,22 +24,34 @@ namespace Enemy.Animation
         private static readonly int Attack = Animator.StringToHash("OnAttack");
         private static readonly int AttackFinish = Animator.StringToHash("OnAttackFinish");
         private static readonly int Death = Animator.StringToHash("OnDeath");
+        private static readonly int Attack2 = Animator.StringToHash("OnAttack2");
+        private static readonly int Attack3 = Animator.StringToHash("OnAttack3");
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
-            baseCombat.hit.AddListener(OnHit);  
-            baseCombat.hitOver.AddListener(OnHitOver);
-            baseCombat.onAttack.AddListener(OnAttack);
-            baseCombat.onAttackFinish.AddListener(OnAttackFinish);
-            baseAI.onDeath.AddListener(OnDeath);
+            reBaseCombat ??= GetComponent<ReBaseCombat>();
+            animator ??= GetComponentInChildren<Animator>();
+            agent = GetComponent<NavMeshAgent>();
+            spriteRotation ??= GetComponentInChildren<SpriteRotation>();
+            baseAI ??= GetComponent<BaseAI>();
+            
+            reBaseCombat.hit.AddListener(OnHit);
+            reBaseCombat.hitOver.AddListener(OnHitOver);
+            reBaseCombat.onAttack.AddListener(OnAttack);
+            reBaseCombat.onAttack2.AddListener(OnAttack2);
+            reBaseCombat.onAttack3.AddListener(OnAttack3);
+            reBaseCombat.onAttackFinish.AddListener(OnAttackFinish);
+            baseAI.onDeath.AddListener(OnDeath);    
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
-            baseCombat.hit.RemoveListener(OnHit);
-            baseCombat.hitOver.RemoveListener(OnHitOver);
-            baseCombat.onAttack.RemoveListener(OnAttack);
-            baseCombat.onAttackFinish.RemoveListener(OnAttackFinish);
+            reBaseCombat.hit.RemoveListener(OnHit);
+            reBaseCombat.hitOver.RemoveListener(OnHitOver);
+            reBaseCombat.onAttack.RemoveListener(OnAttack);
+            reBaseCombat.onAttack2.RemoveListener(OnAttack2);
+            reBaseCombat.onAttack3.AddListener(OnAttack3);
+            reBaseCombat.onAttackFinish.RemoveListener(OnAttackFinish);
             baseAI.onDeath.RemoveListener(OnDeath);
         }
         
@@ -60,5 +74,7 @@ namespace Enemy.Animation
         private void OnAttack() => animator.SetTrigger(Attack);
         private void OnAttackFinish() => animator.SetTrigger(AttackFinish);
         private void OnDeath() => animator.SetTrigger(Death);
+        private void OnAttack2() => animator.SetTrigger(Attack2);
+        private void OnAttack3() => animator.SetTrigger(Attack3);
     }
 }

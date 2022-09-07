@@ -28,7 +28,7 @@ namespace Player.Control
         [SerializeField] private float gravity = -9.81f;
         [SerializeField] private float jumpStrength = 0.08f;
         [SerializeField] private float onLandWait = 0.6f;
-        [SerializeField] private bool canDoubleJump = false;
+        [SerializeField] private bool canDoubleJump;
         [SerializeField] private float jumpStaminaCost = 20f;
         
         [Header("Setting")]
@@ -47,14 +47,15 @@ namespace Player.Control
         
         public Vector3 InputMoveDirection { get; private set; }
         public Vector3 MovementDirection { get; private set; }
+        public Vector3 FacingDirection { get; private set; }
         public bool IsGrounded { get; private set; }
         public Vector3 Velocity { get; private set; }
         public bool IsDashing => dashTimer > 0;
         public bool IsHoldingRun { get; private set; }
-        public bool CanMove => timer <= 0 && (!playerCombat.IsAttacking || isDashing);
+        public bool CanMove => timer <= 0 && ((!playerCombat.IsAttacking && !playerCombat.CrowdControl) || isDashing);
         public bool IsMoving => InputMoveDirection.magnitude > 0.2f;
         public bool IsFalling => Velocity.y < -0.02f;
-
+        
         public float VelocityX
         {
             get => Velocity.x;
@@ -133,11 +134,13 @@ namespace Player.Control
 
             MovementDirection = 
                 isDashing ? lastMoveDir : 
-                CanMove ? InputMoveDirection.normalized : new();
+                CanMove ? InputMoveDirection.normalized : Vector3.zero;
 
             float newSpeed = 
                 isDashing ? speed * dashMultiplier : 
                 IsHoldingRun ? speed * runMultiplier : speed;
+
+            if (IsMoving && !playerCombat.IsAttacking) FacingDirection = MovementDirection.normalized;
             
             Move(Velocity + MovementDirection * (newSpeed * Time.fixedDeltaTime));
         }

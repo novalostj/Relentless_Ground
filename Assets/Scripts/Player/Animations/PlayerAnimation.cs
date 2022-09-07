@@ -28,7 +28,7 @@ namespace Player.Animations
         private static readonly int IsHoldingRun = Animator.StringToHash("IsHoldingRun");
         private static readonly int Hit = Animator.StringToHash("OnHit");
         private static readonly int Stand = Animator.StringToHash("OnStand");
-
+        
         #endregion
         
         private void OnEnable()
@@ -60,7 +60,7 @@ namespace Player.Animations
             CorrectSpriteForward();
             SetDirections();
             
-            float moveMagnitude = movement.InputMoveDirection.magnitude;
+            float moveMagnitude = movement.MovementDirection.magnitude;
             animator.SetFloat(Speed, moveMagnitude);
             animator.SetBool(Falling, movement.IsFalling && !playerCombat.IsAttacking);
             animator.SetBool(IsAttacking, playerCombat.IsAttacking);
