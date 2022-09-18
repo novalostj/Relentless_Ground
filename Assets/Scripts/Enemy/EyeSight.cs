@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Combat;
 using UnityEngine;
 
 namespace Enemy
@@ -7,7 +8,7 @@ namespace Enemy
     public class EyeSight : MonoBehaviour
     {
         [SerializeField] private bool alwaysTargetPlayer;
-        [SerializeField] private string targetTag = "Player";
+        [SerializeField] private ReferenceScriptableObject referenceScriptableObject;
         
         public float sightDistance = 5f;
         public LayerMask collisionMasks;
@@ -30,11 +31,20 @@ namespace Enemy
         private void Start()
         {
             eyeRangeToggle = eyeRange;
-            Target = GameObject.FindGameObjectWithTag(targetTag).transform;
+            
+            if (referenceScriptableObject.target) Target = referenceScriptableObject.target.transform;
         }
 
         void Update()
         {
+            if (!Target)
+            {
+                if (!referenceScriptableObject.target) return;
+                
+                Target = referenceScriptableObject.target.transform;
+                return;
+            }
+            
             Vector3 forward = transform.TransformDirection(Vector3.forward);
             Vector3 other = (Target.position - transform.position).normalized;
             

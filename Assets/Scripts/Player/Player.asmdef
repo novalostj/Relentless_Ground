@@ -5,7 +5,9 @@
         "Stats",
         "Unity.InputSystem",
         "Combat",
-        "TwoPointFiveObjects"
+        "TwoPointFiveObjects",
+        "CustomUtility",
+        "Particles"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

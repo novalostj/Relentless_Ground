@@ -1,5 +1,5 @@
 using System.Collections;
-using Enemy.AI.NewCombat;
+using Enemy.AI.Combat;
 using Stats;
 using UnityEngine;
 using UnityEngine.AI;
@@ -41,7 +41,7 @@ namespace Enemy.AI
         [SerializeField] private float goInterval = 0.2f;
         [SerializeField] private float minimumDistance = 2f;
         
-        private ReBaseCombat oldReBaseCombat;
+        private BaseCombat oldBaseCombat;
         private NavMeshAgent agent;
         private EyeSight eyeSight;
         public EnemyStatusCopy EnemyStatus { get; private set; }
@@ -56,7 +56,7 @@ namespace Enemy.AI
         {
             EnemyStatus = new(scriptableStatus);
             EnemyStatus.death.AddListener(Dead);
-            oldReBaseCombat = GetComponent<ReBaseCombat>();
+            oldBaseCombat = GetComponent<BaseCombat>();
             
             eyeSight = GetComponentInChildren<EyeSight>();
             agent = GetComponent<NavMeshAgent>();
@@ -67,6 +67,8 @@ namespace Enemy.AI
 
         protected virtual void GoToPath(Vector3 point)
         {
+            if (!eyeSight.Target) return;
+            
             var path = new NavMeshPath();
             agent.CalculatePath(point, path);
             
@@ -87,7 +89,7 @@ namespace Enemy.AI
             while (true)
             {
                 yield return new WaitForSeconds(goInterval);
-                
+
                 if (eyeSight.isAgro && !agent.isStopped) GoToPath(eyeSight.Target.position);
             }
             
@@ -105,7 +107,7 @@ namespace Enemy.AI
         {
             IsDead = true;
             agent.isStopped = true;
-            StartCoroutine(WaitThenDeath(oldReBaseCombat.HitInvulnerableTime));
+            StartCoroutine(WaitThenDeath(oldBaseCombat.HitInvulnerableTime));
         }
 
         private IEnumerator WaitThenDeath(float time)

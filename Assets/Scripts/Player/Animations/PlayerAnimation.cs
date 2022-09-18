@@ -57,8 +57,8 @@ namespace Player.Animations
 
         private void Update()
         {
-            CorrectSpriteForward();
             SetDirections();
+            CorrectSpriteForward();
             
             float moveMagnitude = movement.MovementDirection.magnitude;
             animator.SetFloat(Speed, moveMagnitude);
@@ -87,7 +87,7 @@ namespace Player.Animations
         {
             if (!movement.IsMoving || !movement.CanMove) return;
         
-            orientation.LookAt(orientation.position + movement.InputMoveDirection);
+            orientation.LookAt(orientation.position + movement.MovementDirection);
         }
     }
 }

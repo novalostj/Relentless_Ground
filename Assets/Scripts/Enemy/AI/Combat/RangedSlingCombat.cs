@@ -1,40 +1,25 @@
-using System.Collections;
+using Enemy.Animation.Particle;
 using UnityEngine;
 
 namespace Enemy.AI.Combat
 {
-    public class RangedSlingCombat : RangedCombat
+    
+    [RequireComponent(typeof(RangedParticle))]
+    public class RangedSlingCombat : BaseCombat
     {
-        [System.Serializable]
-        public class RangedSling : RangedAttack
-        {
-            public float applySecondDamageOn = 0.6f;
-        }
+        [SerializeField] private RangedAttack doubleRangedAttack;
+
+        protected override Attack CurrentAttack => doubleRangedAttack;
         
-        [Header("Sling Variables"), SerializeField] 
-        private RangedSling rangedSling;
-
-        protected override IEnumerator AttackingEvent()
+        protected override void Update()
         {
-            IsAttacking = true;
-            CanAttack = false;
-            onAttack?.Invoke();
-            cHalt = StartCoroutine(baseAI.Halt(rangedSling.howLongIsAttack));
-            rotateToTarget = true;
+            if (baseAI.IsDead) return;
+
+            if (IsAttacking || !CanAttack) return;
             
-            //ApplyDamage
-            yield return new WaitForSeconds(rangedSling.applyDamageOn[0]);
-            LaunchProjectile(rangedSling.projectile);
-
-            yield return new WaitForSeconds(rangedSling.applySecondDamageOn);
-            LaunchProjectile(rangedSling.projectile);
-            rotateToTarget = false;
-
-            //Attack Is Over
-            yield return new WaitForSeconds(rangedSling.howLongIsAttack - rangedSling.applyDamageOn[0] - rangedSling.applySecondDamageOn);
-            onAttackFinish?.Invoke();
-            IsAttacking = false;
-            cooldown = StartCoroutine(Cooldown());
+            if (doubleRangedAttack.canPerform && TargetInRangeCheck(doubleRangedAttack.distanceToAttack))
+                doubleRangedAttack.attackCoroutine = StartCoroutine(AttackingEvent1(doubleRangedAttack));
         }
+
     }
 }

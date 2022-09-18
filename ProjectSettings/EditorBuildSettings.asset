@@ -6,6 +6,18 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/MainScene.unity
+    guid: 7f3cc3836571169ab881eaff564a7be0
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/InGame_UI.unity
+    guid: c97f00b0396a7fca8b2337414f422df1
+  - enabled: 1
+    path: Assets/Scenes/Player.unity
+    guid: eb5915ba3c29b6f20878d8aaf912a419
+  - enabled: 1
+    path: Assets/Scenes/ParticleApply.unity
+    guid: 51d3781176c0c761e91e64d903624068
   m_configObjects: {}

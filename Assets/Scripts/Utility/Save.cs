@@ -1,6 +1,9 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+using static System.IO.File;
+using static UnityEngine.Application;
+using static UnityEngine.JsonUtility;
 
 namespace Utility
 {
@@ -8,53 +11,48 @@ namespace Utility
     {
         public static void CreateOrOverwrite(string savePath, T saveFile)
         {
-            string saveData = JsonUtility.ToJson(saveFile, true);
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Create(string.Concat(Application.persistentDataPath, savePath));
+            var saveData = ToJson(saveFile, true);
+            var bf = new BinaryFormatter();
+            var file = Create(string.Concat(persistentDataPath, savePath));
             bf.Serialize(file, saveData);
             file.Close();
-            
         }
         
         public static void Load(string savePath, T saveFile)
         {
-            if (!File.Exists(string.Concat(Application.persistentDataPath, savePath))) return;
+            if (!Exists(string.Concat(persistentDataPath, savePath))) return;
             
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Open(string.Concat(Application.persistentDataPath, savePath), FileMode.Open);
-            JsonUtility.FromJsonOverwrite(bf.Deserialize(file).ToString(), saveFile);
+            var bf = new BinaryFormatter();
+            var file = Open(string.Concat(persistentDataPath, savePath), FileMode.Open);
+            FromJsonOverwrite(bf.Deserialize(file).ToString(), saveFile);
             file.Close();
         }
     }
-
+    
     public static class Save
     {
         public static void SaveTexture2D(Texture2D texture, string fileName)
         {
-            byte[] bytes = texture.EncodeToPNG();
-            var dirPath = $"{Application.persistentDataPath}/{fileName}";
+            var bytes = texture.EncodeToPNG();
+            var dirPath = $"{persistentDataPath}/{fileName}";
 
-            if(!Directory.Exists(dirPath)) {
-                Directory.CreateDirectory(dirPath);
-            }
-            
+            if(!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+
             Debug.Log(dirPath);
             
-            File.WriteAllBytes($"{dirPath}/_Image.png", bytes);
+            WriteAllBytes($"{dirPath}/_Image.png", bytes);
         }
         
         public static void SaveTexture2D(Texture2D texture, string fileName, int index)
         {
-            byte[] bytes = texture.EncodeToPNG();
-            var dirPath = $"{Application.persistentDataPath}/{fileName}";
+            var bytes = texture.EncodeToPNG();
+            var dirPath = $"{persistentDataPath}/{fileName}";
 
-            if(!Directory.Exists(dirPath)) {
-                Directory.CreateDirectory(dirPath);
-            }
-            
+            if(!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+
             Debug.Log(dirPath);
             
-            File.WriteAllBytes($"{dirPath}/image_{index}.png", bytes);
+            WriteAllBytes($"{dirPath}/image_{index}.png", bytes);
         }
     }
 }

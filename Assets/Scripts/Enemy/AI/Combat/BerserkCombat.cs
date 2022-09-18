@@ -1,70 +1,58 @@
-using System.Collections;
-using Enemy.AI.NewCombat;
+using Enemy.Animation.Particle;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Enemy.AI.Combat
 {
-    public class BerserkCombat : OldBaseCombat
+    [System.Serializable]
+    public class BerserkAttack : MeleeAttack
     {
-        [System.Serializable]
-        public class BerserkAttack : Attack
-        {
-            public float leapStrength = 10f;
-            public float leapOnTime = 0.3f;
-        }
-
-
-        [Header("Berserk Variables"), SerializeField]
-        private BerserkAttack berserkAttack;
+        public float leapMultiplier = 0.01f;
+        public float leapOnTime = 0.3f;
+        public bool isLeaping;
+        public float maximumVelocity = 40;
+        public float FinalVelocity { get; set; }
+    }
+    
+    [RequireComponent(typeof(BerserkParticle))]
+    public class BerserkCombat : BaseCombat
+    {
+        [SerializeField] private BerserkAttack berserkAttack;
         
-        
-        private bool isLeaping;
+        protected override Attack CurrentAttack => berserkAttack;
+        public float Attack1Scale => berserkAttack.radius;
+        public Vector3 LocalAttackPosition => berserkAttack.localAttackPosition;
 
-        /*
-        protected override IEnumerator AttackingEvent()
+        protected override void Update()
         {
-            IsAttacking = true;
-            CanAttack = false;
-            onAttack?.Invoke();
-            cHalt = StartCoroutine(baseAI.Halt(berserkAttack.howLongIsAttack));
-            rotateToTarget = true;
-
-            yield return new WaitForSeconds(berserkAttack.leapOnTime);
-            transform.LookAt(eyeSight.Target);
-            isLeaping = true;
+            if (baseAI.IsDead) return;
             
-            //ApplyDamage
-            yield return new WaitForSeconds(berserkAttack.applyDamageOn - berserkAttack.leapOnTime);
-            targets.ApplyDamage(20);
-            isLeaping = false;
-            rotateToTarget = false;
+            if (IsAttacking || !CanAttack) return;
             
-            //Attack Is Over
-            yield return new WaitForSeconds(berserkAttack.howLongIsAttack - berserkAttack.applyDamageOn);
-            onAttackFinish?.Invoke();
-            IsAttacking = false;
-            cooldown = StartCoroutine(Cooldown());
+            if (berserkAttack.canPerform && TargetInRangeCheck(berserkAttack.distanceToAttack))
+                berserkAttack.attackCoroutine = StartCoroutine(AttackingEvent1(berserkAttack));
         }
-        */
-
+        
+        private void FixedUpdate()
+        {
+            if (berserkAttack.isLeaping)
+            {
+                Leap();
+            }
+        }
+        
         private void Leap()
         {
-            transform.Translate(Vector3.forward * (berserkAttack.leapStrength * Time.fixedDeltaTime));
-        }
+            transform.Translate(Vector3.forward * (berserkAttack.FinalVelocity * berserkAttack.leapMultiplier * Time.fixedDeltaTime));
+        }   
 
         public override void ReceiveDamage(float value)
         {
             if (!Vulnerable || baseAI.IsDead) return;
+            
             base.ReceiveDamage(value);
-            isLeaping = false;
-        }
-
-        protected override void Dead()
-        {
-            CanAttack = false;
-            Vulnerable = false;
-            IsAttacking = false;
-            StopAllCoroutines();
+            
+            berserkAttack.isLeaping = false;
         }
     }
 }

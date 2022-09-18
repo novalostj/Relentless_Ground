@@ -17,20 +17,8 @@ namespace Player.Control
         public static OnAction onLand;
         public static OnAction onStand;
 
+        [SerializeField] private PlayerStatus playerStatus;
 
-        [Header("Spec")]
-        [SerializeField] private float speed = 8f;
-        [SerializeField] private float runMultiplier = 2f;
-        [SerializeField] private float dashMultiplier = 2.5f;
-        [SerializeField] private float runCostPerSeconds = 1f;
-        
-        [Header("Jump")]
-        [SerializeField] private float gravity = -9.81f;
-        [SerializeField] private float jumpStrength = 0.08f;
-        [SerializeField] private float onLandWait = 0.6f;
-        [SerializeField] private bool canDoubleJump;
-        [SerializeField] private float jumpStaminaCost = 20f;
-        
         [Header("Setting")]
         [SerializeField] private Transform groundCheck;
         [SerializeField] private Transform cameraAnchor;
@@ -42,8 +30,8 @@ namespace Player.Control
         public Coroutine fallToStand;
         private float timer, dashTimer;
         private bool isDashing, runToggleForEvent, doubleJumpToggle;
-        private Vector3 lastMoveDir;
         private Vector2 inputDir;
+        private Coroutine dashCoroutine;
         
         public Vector3 InputMoveDirection { get; private set; }
         public Vector3 MovementDirection { get; private set; }
@@ -53,8 +41,10 @@ namespace Player.Control
         public bool IsDashing => dashTimer > 0;
         public bool IsHoldingRun { get; private set; }
         public bool CanMove => timer <= 0 && ((!playerCombat.IsAttacking && !playerCombat.CrowdControl) || isDashing);
-        public bool IsMoving => InputMoveDirection.magnitude > 0.2f;
+        public bool IsMoving => MovementDirection.magnitude > 0.2f;
         public bool IsFalling => Velocity.y < -0.02f;
+        public LayerMask GroundLayer => groundLayer;
+        public float Gravity => playerStatus.Movement.gravity;
         
         public float VelocityX
         {
@@ -110,7 +100,7 @@ namespace Player.Control
             if (runToggleForEvent != IsHoldingRun)
             {
                 runToggleForEvent = IsHoldingRun;
-                onRun?.Invoke(runToggleForEvent, -runCostPerSeconds);
+                onRun?.Invoke(runToggleForEvent, -playerStatus.Movement.runCostPerSeconds);
             }
             
             SetupTimer(Time.deltaTime);
@@ -130,15 +120,15 @@ namespace Player.Control
 
         private void FixedUpdate()
         {
-            VelocityY = isDashing ? 0 : Velocity.y + gravity * Time.fixedDeltaTime;
+            VelocityY = isDashing ? 0 : Velocity.y + playerStatus.Movement.gravity * Time.fixedDeltaTime;
 
             MovementDirection = 
-                isDashing ? lastMoveDir : 
+                isDashing ? FacingDirection : 
                 CanMove ? InputMoveDirection.normalized : Vector3.zero;
 
             float newSpeed = 
-                isDashing ? speed * dashMultiplier : 
-                IsHoldingRun ? speed * runMultiplier : speed;
+                isDashing ? playerStatus.Movement.speed * playerStatus.Movement.dashMultiplier : 
+                IsHoldingRun ? playerStatus.Movement.speed * playerStatus.Movement.runMultiplier : playerStatus.Movement.speed;
 
             if (IsMoving && !playerCombat.IsAttacking) FacingDirection = MovementDirection.normalized;
             
@@ -150,7 +140,10 @@ namespace Player.Control
             timer = Mathf.Clamp(timer - deltaTime, 0, 20);
         }
 
-        private void Move(Vector3 motion) => controller.Move(motion);
+        private void Move(Vector3 motion)
+        {
+            controller.Move(motion);
+        }
         public void ApplyMotion(Vector3 motion) => Velocity += motion;
 
         private void CheckFloor(bool checkFloor)
@@ -164,7 +157,7 @@ namespace Player.Control
             {
                 onLand?.Invoke();
                 fallToStand = StartCoroutine(LandToStand());
-                timer = onLandWait;
+                timer = playerStatus.Movement.onLandWait;
             }
         }
 
@@ -176,16 +169,17 @@ namespace Player.Control
 
             if (!IsGrounded)
             {
-                if (!canDoubleJump || !doubleJumpToggle) return;
+                if (!playerStatus.Movement.canDoubleJump || !doubleJumpToggle) return;
                 
                 doubleJumpToggle = false;
             }
             
-            bool? hasEnoughStamina = onJumpFloat?.Invoke(jumpStaminaCost);
+            bool? hasEnoughStamina = onJumpFloat?.Invoke(playerStatus.Movement.jumpStaminaCost);
 
             if (hasEnoughStamina == false) return;
             
-            VelocityY = Mathf.Sqrt(jumpStrength * -2f * gravity);
+            VelocityY = Mathf.Sqrt(playerStatus.Movement.jumpStrength * -2f * playerStatus.Movement.gravity);
+            
             onJump?.Invoke();
         }
 
@@ -201,10 +195,10 @@ namespace Player.Control
 
         private void Dash(float time)
         {
-            lastMoveDir = (cameraAnchor ? cameraAnchor.right : transform.right) * inputDir.x +
-                          (cameraAnchor ? cameraAnchor.forward : transform.forward) * inputDir.y;
+            if (dashCoroutine != null)
+                StopCoroutine(dashCoroutine);
             
-            StartCoroutine(IEDashTime(time));
+            dashCoroutine = StartCoroutine(IEDashTime(time));
         }
 
         private IEnumerator IEDashTime(float time)
@@ -216,7 +210,7 @@ namespace Player.Control
 
         private IEnumerator LandToStand()
         {
-            yield return new WaitForSeconds(onLandWait);
+            yield return new WaitForSeconds(playerStatus.Movement.onLandWait);
             onStand?.Invoke();
         }
 

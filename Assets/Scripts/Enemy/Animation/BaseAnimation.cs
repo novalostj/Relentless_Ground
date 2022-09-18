@@ -2,7 +2,6 @@ using System;
 using _2._5D_Objects;
 using Enemy.AI;
 using Enemy.AI.Combat;
-using Enemy.AI.NewCombat;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -10,7 +9,7 @@ namespace Enemy.Animation
 {
     public class BaseAnimation : MonoBehaviour
     {
-        private ReBaseCombat reBaseCombat;
+        private BaseCombat baseCombat;
         private SpriteRotation spriteRotation;
         private Animator animator;
         private NavMeshAgent agent;
@@ -29,29 +28,29 @@ namespace Enemy.Animation
 
         protected virtual void OnEnable()
         {
-            reBaseCombat ??= GetComponent<ReBaseCombat>();
+            baseCombat ??= GetComponent<BaseCombat>();
             animator ??= GetComponentInChildren<Animator>();
             agent = GetComponent<NavMeshAgent>();
             spriteRotation ??= GetComponentInChildren<SpriteRotation>();
             baseAI ??= GetComponent<BaseAI>();
             
-            reBaseCombat.hit.AddListener(OnHit);
-            reBaseCombat.hitOver.AddListener(OnHitOver);
-            reBaseCombat.onAttack.AddListener(OnAttack);
-            reBaseCombat.onAttack2.AddListener(OnAttack2);
-            reBaseCombat.onAttack3.AddListener(OnAttack3);
-            reBaseCombat.onAttackFinish.AddListener(OnAttackFinish);
+            baseCombat.hit.AddListener(OnHit);
+            baseCombat.hitOver.AddListener(OnHitOver);
+            baseCombat.onAttack1.AddListener(OnAttack);
+            baseCombat.onAttack2.AddListener(OnAttack2);
+            baseCombat.onAttack3.AddListener(OnAttack3);
+            baseCombat.onAttackFinish.AddListener(OnAttackFinish);
             baseAI.onDeath.AddListener(OnDeath);    
         }
 
         protected virtual void OnDisable()
         {
-            reBaseCombat.hit.RemoveListener(OnHit);
-            reBaseCombat.hitOver.RemoveListener(OnHitOver);
-            reBaseCombat.onAttack.RemoveListener(OnAttack);
-            reBaseCombat.onAttack2.RemoveListener(OnAttack2);
-            reBaseCombat.onAttack3.AddListener(OnAttack3);
-            reBaseCombat.onAttackFinish.RemoveListener(OnAttackFinish);
+            baseCombat.hit.RemoveListener(OnHit);
+            baseCombat.hitOver.RemoveListener(OnHitOver);
+            baseCombat.onAttack1.RemoveListener(OnAttack);
+            baseCombat.onAttack2.RemoveListener(OnAttack2);
+            baseCombat.onAttack3.AddListener(OnAttack3);
+            baseCombat.onAttackFinish.RemoveListener(OnAttackFinish);
             baseAI.onDeath.RemoveListener(OnDeath);
         }
         

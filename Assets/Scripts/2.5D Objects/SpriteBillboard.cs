@@ -17,14 +17,14 @@ namespace _2._5D_Objects
 
         private void Start()
         {
-            if (Camera.main != null) mainCamera = Camera.main.transform;
+            SetCamera();
         }
 
         private void Update()
         {
             if (!mainCamera)
             {
-                Debug.Log($"MISSING CAMERA {this}");
+                SetCamera();
                 return;
             }
 
@@ -47,6 +47,14 @@ namespace _2._5D_Objects
             };
 
             transform.localRotation = Quaternion.Euler(rotation);
+        }
+
+        private void SetCamera()
+        {
+            var main = Camera.main;
+            if (!main) return;
+                
+            mainCamera = main.transform;
         }
     }
 }

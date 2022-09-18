@@ -1,69 +1,42 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Combat;
+using Stats;
 using UnityEngine;
+using Utility;
 
 namespace Player.Control
 {
-    [Serializable]
-    public class SphereColliders
-    {
-        public Vector3 localForwardPosition = Vector3.zero;
-        public float radius = 1.5f;
-        public LayerMask layerMask;
-
-        public Collider[] GetColliders(Vector3 position, Vector3 forward) =>
-            Physics.OverlapSphere(position + forward + localForwardPosition, radius, layerMask);
-
-        public List<ITargetable> GetTargets(Vector3 position, Vector3 forward)
-        {
-            var colliders = GetColliders(position, forward);
-
-            return (from collider in colliders select collider.GetComponent<ITargetable>()).ToList();
-        }
-    }
-    
     public class PlayerCombat : MonoBehaviour, ITargetable
     {
         public delegate bool PlayerEnergyUse<in T>(T value);
         public delegate void PlayerCombatEvent();
         public delegate void PlayerCombatEvent<in T>(T value);
         
-        public static PlayerCombatEvent playerCombatV1;
-        public static PlayerCombatEvent playerCombatV2; 
-        public static PlayerCombatEvent playerCombatV3;
-        public static PlayerCombatEvent<float> playerCombatV3Float;
-        public static PlayerCombatEvent onFinished;
-        public static PlayerCombatEvent onHit;
-        public static PlayerCombatEvent<float> onHitFloat;
+        public static PlayerCombatEvent 
+            onHit, 
+            onSlashApply,
+            onSlamApply,
+            onFinished,
+            playerCombatV1,
+            playerCombatV2,
+            playerCombatV3;
+        public static PlayerCombatEvent<float> 
+            playerCombatV3Float,
+            onHitFloat;
         
         public static PlayerEnergyUse<float> energyConsumption;
 
         [SerializeField] private float onAttackTime = 0.7f;
         [SerializeField] private float hitTime = 0.4f;
-        [SerializeField] private SphereColliders forwardCollider, slamCollider;
         [SerializeField] private Movement movement;
-        
-        [Header("Slash")] 
-        [SerializeField] private float slashCooldown = 1f;
-        [SerializeField] private float applySlashDamageOn = 0.2f;
-        [SerializeField] private float slashCost = 10f;
+        [SerializeField] private PlayerStatus playerStatus;
 
-        [Header("Slam")] 
-        [SerializeField] private float slamCooldown = 3f;
-        [SerializeField] private float slamWeight = -0.5f;
-        [SerializeField] private float slamCost = 25f;
-        [SerializeField] private float applySlamDamageOn = 0.4f;
-
-        [Header("Dash")] 
-        [SerializeField] private float dashCooldown = 3f;
-        [SerializeField] private float onDashTime = 0.4f;
-        [SerializeField] private float dashCost = 40f;
-        
+        private Attack Slash => playerStatus.Slash;
+        private Slam Slam => playerStatus.Slam;
+        private Dash Dash => playerStatus.Dash;
         private float timer, dashTimer;
         private Coroutine applyForwardDamage, vulnerableInBetween, hitCoroutine;
+        private Coroutine disableMovementCoroutine;
 
         public bool IsAttacking => timer > 0;
         public bool IsDashing => dashTimer > 0;
@@ -72,34 +45,43 @@ namespace Player.Control
         public bool CanSlash { get; private set; } = true;
         public bool Vulnerable { get; private set; } = true;
         public bool CrowdControl { get; private set; }
-        private bool CanAttack => timer <= 0 && !CrowdControl;
-        
+        private bool CanAttack => timer <= 0 && !CrowdControl && !IsDead;
+        private bool IsDead { get; set; }
+        public SphereColliders ForwardCollider => playerStatus.ForwardCollider;
+        public SphereColliders SlamCollider => playerStatus.SlamCollider;
+
         private bool CanAttackV1 => movement.IsGrounded && movement.CanMove && CanSlash;
         private bool CanAttackV2 => !movement.IsGrounded && movement.CanMove && CanSlam;
-        private bool CanAttackV3 => movement.IsMoving && movement.IsHoldingRun && !movement.IsDashing && CanDash;
+        private bool CanAttackV3 => movement.IsMoving && !movement.IsDashing && CanDash;
 
         private void OnEnable()
         {
             InputDetection.onAttack += Attack;
             InputDetection.onSecondAttack += SecondAttack;
+            PlayerStatus.noHealth += PlayerIsDead;
         }
 
         private void OnDisable()
         {
             InputDetection.onAttack -= Attack;
             InputDetection.onSecondAttack -= SecondAttack;
+            PlayerStatus.noHealth -= PlayerIsDead;
         }
 
 #if UNITY_EDITOR
+        public bool displayDebug;
+        
         private void OnDrawGizmosSelected()
         {
+            if (!displayDebug) return;
+            
             var position = transform.position;
             var facingDirection = movement.FacingDirection;
             
             Gizmos.color = Color.cyan;
-            Gizmos.DrawWireSphere(position + facingDirection + slamCollider.localForwardPosition, slamCollider.radius);
+            Gizmos.DrawWireSphere(position + facingDirection + SlamCollider.localForwardPosition, SlamCollider.radius);
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(position + facingDirection + forwardCollider.localForwardPosition, forwardCollider.radius);
+            Gizmos.DrawWireSphere(position + facingDirection + ForwardCollider.localForwardPosition, ForwardCollider.radius);
         }
 #endif
 
@@ -110,7 +92,7 @@ namespace Player.Control
 
         private void FixedUpdate()
         {
-            ApplyForwardDamage();
+            ApplyDashDamage();
         }
 
         private void SetTimer()
@@ -129,29 +111,36 @@ namespace Player.Control
             
             if (CanAttackV1)
             {
-                bool? hasEnergy = energyConsumption?.Invoke(slashCost);
+                bool? hasEnergy = energyConsumption?.Invoke(Slash.energyCost);
                 
                 if (hasEnergy is false) return; 
                 
                 if (hitCoroutine != null) StopCoroutine(hitCoroutine);
                 timer = onAttackTime;
                 playerCombatV1?.Invoke();
-                applyForwardDamage = StartCoroutine(ApplyForwardDamageOn(applySlashDamageOn));
-                StartCoroutine(SlashTimer(slashCooldown));
+                applyForwardDamage = StartCoroutine(ApplyForwardDamageOn(Slash.applyDamageOn, Slash.damage));
+                StartCoroutine(SlashTimer(Slash.cooldown));
                 StartCoroutine(InvulnerableTimer(onAttackTime));
             }
             else if (CanAttackV2)
             {
-                bool? hasEnergy = energyConsumption?.Invoke(slamCost);
+                bool? hasEnergy = energyConsumption?.Invoke(Slam.energyCost);
                 
-                if (hasEnergy is false) return; 
-                
+                if (hasEnergy is false) return;
+
+                var position = transform.position;
+                Physics.Raycast(position, transform.TransformDirection(Vector3.down), out var hit, 99, movement.GroundLayer);
+           
+                float distance = (position - hit.point).magnitude;
+                float finaVelocity = -MotionInOneDirection.FindFinalVelocity(distance, movement.Gravity, Slam.applyDamageOn);
+
                 if (hitCoroutine != null) StopCoroutine(hitCoroutine);
                 timer = onAttackTime;
-                movement.ApplyMotion(new Vector3(0, slamWeight, 0));
+                movement.ApplyMotion(new Vector3(0, finaVelocity * Slam.voMultiplier, 0));
                 playerCombatV2?.Invoke();
-                StartCoroutine(ApplyCenterDamageOn(applySlamDamageOn));
-                StartCoroutine(SlamTimer(slamCooldown));
+                
+                StartCoroutine(ApplyCenterDamageOn(Slam.applyDamageOn, Slam.damage));
+                StartCoroutine(SlamTimer(Slam.cooldown));
                 StartCoroutine(InvulnerableTimer(onAttackTime));
             }
         }
@@ -169,17 +158,17 @@ namespace Player.Control
             
             if (CanAttackV3)
             {
-                bool? hasEnergy = energyConsumption?.Invoke(dashCost);
+                bool? hasEnergy = energyConsumption?.Invoke(Dash.energyCost);
                 
                 if (hasEnergy is false) return; 
                 
                 if (hitCoroutine != null) StopCoroutine(hitCoroutine);
-                timer = onDashTime;
-                dashTimer = onDashTime;
+                timer = Dash.time;
+                dashTimer = Dash.time;
                 playerCombatV3?.Invoke();
-                playerCombatV3Float?.Invoke(onDashTime);
-                StartCoroutine(DashCooldown(dashCooldown));
-                StartCoroutine(InvulnerableTimer(onDashTime));
+                playerCombatV3Float?.Invoke(Dash.time);
+                StartCoroutine(DashCooldown(Dash.cooldown));
+                StartCoroutine(InvulnerableTimer(Dash.time));
             }
         }
 
@@ -190,22 +179,24 @@ namespace Player.Control
             CanDash = true;
         }
 
-        private IEnumerator ApplyForwardDamageOn(float time)
+        private IEnumerator ApplyForwardDamageOn(float time, float damage)
         {
             yield return new WaitForSeconds(time);
-            var targets = forwardCollider.GetTargets(transform.position, movement.FacingDirection);
+            onSlashApply?.Invoke();
+            var targets = CombatCollider.GetTargets(transform.position + movement.FacingDirection + ForwardCollider.localForwardPosition, ForwardCollider.radius, ForwardCollider.layerMask);
 
             foreach (var target in targets)
-                target.ReceiveDamage(1);
+                target.ReceiveDamage(damage);
         }
 
-        private IEnumerator ApplyCenterDamageOn(float time)
+        private IEnumerator ApplyCenterDamageOn(float time, float damage)
         {
             yield return new WaitForSeconds(time);
-            var targets = slamCollider.GetTargets(transform.position, Vector3.zero);
+            onSlamApply?.Invoke();
+            var targets = CombatCollider.GetTargets(transform.position, SlamCollider.radius, SlamCollider.layerMask);
 
             foreach (var target in targets)
-                target.ReceiveDamage(1);
+                target.ReceiveDamage(damage);
         }
 
         private IEnumerator SlamTimer(float time)
@@ -222,14 +213,14 @@ namespace Player.Control
             CanSlash = true;
         }
 
-        private void ApplyForwardDamage()
+        private void ApplyDashDamage()
         {
             if (!IsDashing) return;
             
-            var targets = forwardCollider.GetTargets(movement.transform.position, movement.MovementDirection);
+            var targets = CombatCollider.GetTargets(transform.position + movement.MovementDirection, SlamCollider.radius, SlamCollider.layerMask);
 
             foreach (var target in targets)
-                target.ReceiveDamage(1);
+                target.ReceiveDamage(Dash.damage);
         }
 
         private IEnumerator HitIsOverTimer()
@@ -246,24 +237,35 @@ namespace Player.Control
         {
             if (!Vulnerable) return;
             
+            ForceReceiveDamage(value);
+        }
+
+        public void ForceReceiveDamage(float value)
+        {
+            //if (IsDead) return;
+            
             if (applyForwardDamage != null) StopCoroutine(applyForwardDamage);
             if (movement.fallToStand != null) movement.StopCoroutine(movement.fallToStand);
             if (vulnerableInBetween != null) StopCoroutine(vulnerableInBetween);
             
             onHit?.Invoke();
             onHitFloat?.Invoke(value);
-            hitCoroutine = StartCoroutine(HitIsOverTimer());
-        }
-
-        public void ForceReceiveDamage(float value)
-        {
             
+            if (hitCoroutine != null) StopCoroutine(hitCoroutine);
+            hitCoroutine = StartCoroutine(HitIsOverTimer());
         }
 
         public void DisableMovement(float time)
         {
             if (!Vulnerable) return;
-            StartCoroutine(DisableMovementCoroutine(time));
+
+            ForceDisableMovement(time);
+        }
+
+        public void ForceDisableMovement(float time)
+        {
+            if (disableMovementCoroutine != null) StopCoroutine(disableMovementCoroutine);
+            disableMovementCoroutine = StartCoroutine(DisableMovementCoroutine(time));
         }
 
         public IEnumerator DisableMovementCoroutine(float time)
@@ -271,6 +273,11 @@ namespace Player.Control
             CrowdControl = true;
             yield return new WaitForSeconds(time);
             CrowdControl = false;
+        }
+
+        private void PlayerIsDead()
+        {
+            //IsDead = true;
         }
     }
 }

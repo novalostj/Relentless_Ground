@@ -1,55 +1,31 @@
-using System.Collections;
-using Enemy.AI.NewCombat;
+using Enemy.Animation.Particle;
 using UnityEngine;
 
 namespace Enemy.AI.Combat
 {
-    
-    public class RangedCombat : OldBaseCombat
+    [System.Serializable]
+    public class RangedAttack : Attack
     {
-        [System.Serializable]
-        public class RangedAttack : Attack
-        {
-            public Transform projectileSpawn;
-            public GameObject projectile;
-        }
+        public GameObject projectile;
+    }
+    
+    [RequireComponent(typeof(RangedParticle))]
+    public class RangedCombat : BaseCombat
+    {
+        [Header("Ranged Variables")]
+        [SerializeField] private RangedAttack rangedAttack;
+
+        protected override Attack CurrentAttack => rangedAttack;
         
-        [Header("Ranged Variables"), SerializeField]
-        private RangedAttack rangedAttack;
-
-        protected override IEnumerator AttackingEvent()
+        protected override void Update()
         {
-            IsAttacking = true;
-            CanAttack = false;
-            onAttack?.Invoke();
-            cHalt = StartCoroutine(baseAI.Halt(rangedAttack.howLongIsAttack));
-            rotateToTarget = true;
+            if (baseAI.IsDead) return;
+
+            if (IsAttacking || !CanAttack) return;
             
-            //ApplyDamage
-            yield return new WaitForSeconds(rangedAttack.applyDamageOn[0]);
-            LaunchProjectile(rangedAttack.projectile);
-            rotateToTarget = false;
-            
-            //Attack Is Over
-            yield return new WaitForSeconds(rangedAttack.howLongIsAttack - rangedAttack.applyDamageOn[0]);
-            onAttackFinish?.Invoke();
-            IsAttacking = false;
-            cooldown = StartCoroutine(Cooldown());
+            if (rangedAttack.canPerform && TargetInRangeCheck(rangedAttack.distanceToAttack))
+                rangedAttack.attackCoroutine = StartCoroutine(AttackingEvent1(rangedAttack));
         }
 
-        protected void LaunchProjectile(GameObject obj)
-        {
-            GameObject instance = Instantiate(obj, rangedAttack.projectileSpawn.position, transform.rotation);
-
-            Destroy(instance, 5f);
-        }
-
-        protected override void Dead()
-        {
-            CanAttack = false;
-            Vulnerable = false;
-            IsAttacking = false;
-            StopAllCoroutines();
-        }
     }
 }

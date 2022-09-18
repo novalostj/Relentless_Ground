@@ -2,7 +2,8 @@
     "name": "Stats",
     "rootNamespace": "",
     "references": [
-        "GUID:d8b63aba1907145bea998dd612889d6b"
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:dc3eeb40ddf808b73b2ed4fb8afe5b3b"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

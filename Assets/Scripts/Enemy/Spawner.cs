@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Timers;
+using Particles;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -54,7 +55,7 @@ namespace Enemy
             {
                 Vector2 randomCirclePoint = Random.insideUnitCircle;
                 Vector3 localSpawnPosition = new Vector3(randomCirclePoint.x, 0, randomCirclePoint.y) * spawnRadius;
-                GameObject spawnedEnemy = Instantiate(RandomEnemy(), transform.position + localSpawnPosition, quaternion.identity) as GameObject;
+                GameObject spawnedEnemy = Instantiate(RandomEnemy(), transform.position + localSpawnPosition, quaternion.identity);
                 spawnedEnemy.transform.parent = transform;
             }
         }

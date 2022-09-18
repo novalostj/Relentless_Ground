@@ -12,5 +12,130 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3e7aacedabf46d08a9c6e795c1a1522, type: 3}
   m_Name: Player_Scriptable
   m_EditorClassIdentifier: 
-  energyRegenSpeed: 10
-  healthRegenSpeed: 10
+  maxHealth: 100
+  movement:
+    speed: 4
+    runMultiplier: 1.7
+    dashMultiplier: 7
+    runCostPerSeconds: 4
+    gravity: -0.91
+    jumpStrength: 0.07
+    onLandWait: 0.25
+    canDoubleJump: 1
+    jumpStaminaCost: 2.4
+  slash:
+    cooldown: 0
+    applyDamageOn: 0.2
+    energyCost: 23
+    damage: 30
+  slam:
+    cooldown: 0
+    applyDamageOn: 0.3
+    energyCost: 35
+    damage: 12
+    voMultiplier: 0.012
+  dash:
+    cooldown: 0
+    applyDamageOn: 0
+    energyCost: 0
+    damage: 16
+    time: 0.25
+  forwardCollider:
+    localForwardPosition: {x: 0, y: 1, z: -0.2}
+    radius: 1.5
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 768
+  slamCollider:
+    localForwardPosition: {x: 0, y: 1, z: 0}
+    radius: 3
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 768
+  healthRegeneration:
+    regenerationStrength: 10
+    timeWhenFullRegen: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 2
+        outSlope: 2
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    pauseTime: 0.5
+    decreaseMultiplierBy: 1
+  staminaRegeneration:
+    regenerationStrength: 10
+    timeWhenFullRegen: 0
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 2
+        outSlope: 2
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    pauseTime: 0.3
+    decreaseMultiplierBy: 0.4
+  energyRegeneration:
+    regenerationStrength: 23
+    timeWhenFullRegen: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 2
+        outSlope: 2
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    pauseTime: 0.35
+    decreaseMultiplierBy: 0.6

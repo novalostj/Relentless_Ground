@@ -1,59 +1,34 @@
 using System;
+using Combat;
 using Player.Control;
 using Stats;
 using UnityEngine;
+using Movement = Player.Control.Movement;
 
 namespace Player
 {
     [Serializable]
-    public class Regeneration
+    public class EnemiesReference
     {
-        [SerializeField] private float regenerationStrength = 10f;
-        [SerializeField] private float timeWhenFullRegen = 2f;
-        [SerializeField] private AnimationCurve curve;
-        [SerializeField] private float pauseTime = 0.5f;
-        [Range(0, 1)] [SerializeField] private float decreaseMultiplierBy = 1;
+        [SerializeField] private ReferenceScriptableObject enemyReference;
+        [SerializeField] private GameObject toLookAt;
 
-        private float multiplier, timer, overTimeConsumption;
-        private bool CanRegenerate => timer == 0;
-        private bool isPaused;
-
-
-
-        public float Regenerate(float deltaTime)
+        public void Setup()
         {
-            if (isPaused) return overTimeConsumption * deltaTime;
-
-            timer = Mathf.Clamp(timer - deltaTime, 0, pauseTime);
-
-            if (!CanRegenerate)
-                return 0;
-
-            multiplier = Mathf.Clamp(multiplier + deltaTime / timeWhenFullRegen, 0, 1);
-
-            return regenerationStrength * deltaTime * curve.Evaluate(multiplier);
-        }
-
-        public void Halt()
-        {
-            timer = pauseTime;
-            multiplier = Mathf.Clamp(multiplier - decreaseMultiplierBy, 0, 1);
-        }
-
-        public void Pause(bool paused, float overTimeValue)
-        {
-            overTimeConsumption = overTimeValue;
-            isPaused = paused;
+            enemyReference.target = toLookAt;
         }
     }
-
-
+    
     public class MainPlayerScript : MonoBehaviour 
     {
         [SerializeField] private PlayerStatus playerStatus;
+        [SerializeField] private EnemiesReference enemiesReference;
      
-        [SerializeField] private Regeneration
-            health, stamina, energy;
+        private Regeneration Health => playerStatus.HealthRegeneration;
+        private Regeneration Stamina => playerStatus.StaminaRegeneration;
+        private Regeneration Energy => playerStatus.EnergyRegeneration;
+        
+        
      
         private void OnEnable()
         {
@@ -71,21 +46,22 @@ namespace Player
             Movement.onJumpFloat -= StaminaConsumption;
         }
         private void Start()
-        { 
+        {
+            enemiesReference.Setup();
             playerStatus.OnStart();
         }
         
         private void ReceiveDamage(float value) 
         { 
             playerStatus.AddHealth(-value);
-            health.Halt();
+            Health.Halt();
         }
      
         private bool EnergyConsumption(float value)
         {
             bool hasEnoughEnergy = playerStatus.OnEnergyConsumption(value);
      
-            if (hasEnoughEnergy) energy.Halt();
+            if (hasEnoughEnergy) Energy.Halt();
      
             return hasEnoughEnergy;
         }
@@ -97,22 +73,22 @@ namespace Player
      
         private void Regenerate(float deltaTime)
         {
-            playerStatus.AddHealth(health.Regenerate(deltaTime));
-            playerStatus.AddEnergy(energy.Regenerate(deltaTime));
-            playerStatus.AddStamina(stamina.Regenerate(deltaTime));
+            playerStatus.AddHealth(Health.Regenerate(deltaTime));
+            playerStatus.AddEnergy(Energy.Regenerate(deltaTime));
+            playerStatus.AddStamina(Stamina.Regenerate(deltaTime));
         }
      
         private void RunConsumption(bool isPaused, float value)
         {
-            stamina.Pause(isPaused, value);
-            stamina.Halt();
+            Stamina.Pause(isPaused, value);
+            Stamina.Halt();
         }
         
         private bool StaminaConsumption(float value)
         {
             bool hasEnoughStamina = playerStatus.OnStaminaConsumption(value);
             
-            if (hasEnoughStamina) stamina.Halt();
+            if (hasEnoughStamina) Stamina.Halt();
 
             return hasEnoughStamina;
         }
