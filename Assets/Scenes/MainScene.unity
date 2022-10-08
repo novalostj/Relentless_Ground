@@ -152,16 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f03bdc379a4415a8a6cd0ea9f16f944, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneGroup:
-  - scenes:
-    - name: SampleScene
-      isLoaded: 0
-    - name: InGame_UI
-      isLoaded: 0
-    - name: Player
-      isLoaded: 0
-    - name: ParticleApply
-      isLoaded: 0
+  sceneScriptableObject: {fileID: 11400000, guid: df5dfa5d9a6e9cd279f5676e3f50bbd8, type: 2}
 --- !u!4 &268609678
 Transform:
   m_ObjectHideFlags: 0

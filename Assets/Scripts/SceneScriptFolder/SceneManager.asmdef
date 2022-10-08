@@ -1,3 +1,16 @@
 {
-	"name": "SceneManager"
+    "name": "SceneManager",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b195fdbc65079536bb4dde9b46b2e69d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
