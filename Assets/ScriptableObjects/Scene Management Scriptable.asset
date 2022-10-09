@@ -17,11 +17,11 @@ MonoBehaviour:
     scenes:
     - name: SampleScene
       isLoaded: 0
-    - name: InGame_UI
-      isLoaded: 0
     - name: Player
       isLoaded: 0
     - name: ParticleApply
+      isLoaded: 0
+    - name: InGame_UI
       isLoaded: 0
   - name: Main Menu
     scenes:

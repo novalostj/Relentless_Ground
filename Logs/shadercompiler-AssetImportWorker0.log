@@ -1,0 +1,7 @@
+Base path: '/mnt/e6c94c8b-0a35-4bc3-a5c0-85336a613d3a/Editor/2021.3.10f1/Editor/Data', plugins path '/mnt/e6c94c8b-0a35-4bc3-a5c0-85336a613d3a/Editor/2021.3.10f1/Editor/Data/PlaybackEngines'
+Cmd: initializeCompiler
+
+
+Unhandled exception: Protocol error - failed to read magic number (error -2147483644, transferred 0/4)
+
+Quitting shader compiler process
