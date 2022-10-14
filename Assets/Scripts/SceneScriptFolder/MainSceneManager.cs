@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Stats;
 using UnityEngine;
@@ -10,8 +11,8 @@ namespace SceneScriptFolder
     public class LocalScene
     {
         public string name;
-
         public bool isLoaded;
+        public bool debugLoad = true;
     }
     
     
@@ -31,7 +32,7 @@ namespace SceneScriptFolder
             
             foreach (var scene in scenes)
             {
-                if (scene.isLoaded) continue;
+                if (scene.isLoaded || !scene.debugLoad) continue;
                 
                 SceneManager.LoadSceneAsync(scene.name, LoadSceneMode.Additive);
                 scene.isLoaded = true;
@@ -70,13 +71,13 @@ namespace SceneScriptFolder
         private void OnEnable()
         {
             loadScene += LoadLocalGroupScene;
-            PlayerStatus.noHealth += GoToMainMenu;
+            PlayerStatus.noHealth += CoroutineStartWaitToMainMenu;
         }
 
         private void OnDisable()
         {
             loadScene -= LoadLocalGroupScene;
-            PlayerStatus.noHealth -= GoToMainMenu;
+            PlayerStatus.noHealth -= CoroutineStartWaitToMainMenu;
         }
 
         private void Start()
@@ -87,9 +88,7 @@ namespace SceneScriptFolder
         private void LoadLocalGroupScene(LocalGroupScene localGroupScene)
         {
             if (localGroupScene.isLoaded) return;
-
-
-            Debug.Log("Null3");
+            
             CurrentMainScene?.UnloadAll();
 
             CurrentMainScene = localGroupScene;
@@ -108,19 +107,28 @@ namespace SceneScriptFolder
                 if (localGroupScene.name == methodName)
                     return localGroupScene;
 
-            Debug.Log("Null2");
             return null;
         }
 
         private void LoadLocalGroupScene(string methodName)
         {
-            Debug.Log("Null1");
             LoadLocalGroupScene(FindGroupScene(methodName));
+        }
+
+        private void CoroutineStartWaitToMainMenu()
+        {
+            StartCoroutine(WaitThenLoad(2.5f));
         }
 
         private void GoToMainMenu()
         {
             LoadLocalGroupScene("Main Menu");
+        }
+
+        private IEnumerator WaitThenLoad(float time)
+        {
+            yield return new WaitForSeconds(time);
+            GoToMainMenu();
         }
 
         private void OnApplicationQuit()

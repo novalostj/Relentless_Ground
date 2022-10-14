@@ -23,7 +23,10 @@ namespace Player
     {
         [SerializeField] private PlayerStatus playerStatus;
         [SerializeField] private EnemiesReference enemiesReference;
-     
+
+        private Movement movement;
+        private PlayerCombat playerCombat;
+
         private Regeneration Health => playerStatus.HealthRegeneration;
         private Regeneration Stamina => playerStatus.StaminaRegeneration;
         private Regeneration Energy => playerStatus.EnergyRegeneration;
@@ -36,6 +39,7 @@ namespace Player
             PlayerCombat.energyConsumption += EnergyConsumption;
             Movement.onRun += RunConsumption;
             Movement.onJumpFloat += StaminaConsumption;
+            PlayerStatus.noHealth += OnDeath;
         }
 
         private void OnDisable() 
@@ -44,9 +48,13 @@ namespace Player
             PlayerCombat.energyConsumption -= EnergyConsumption;
             Movement.onRun -= RunConsumption;
             Movement.onJumpFloat -= StaminaConsumption;
+            PlayerStatus.noHealth -= OnDeath;
         }
+        
         private void Start()
         {
+            playerCombat = GetComponent<PlayerCombat>();
+            movement = GetComponent<Movement>();
             enemiesReference.Setup();
             playerStatus.OnStart();
         }
@@ -91,6 +99,12 @@ namespace Player
             if (hasEnoughStamina) Stamina.Halt();
 
             return hasEnoughStamina;
+        }
+
+        private void OnDeath()
+        {
+            movement.enabled = false;
+            playerCombat.enabled = false;
         }
     }
 }

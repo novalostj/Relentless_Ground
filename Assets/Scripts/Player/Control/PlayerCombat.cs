@@ -242,7 +242,7 @@ namespace Player.Control
 
         public void ForceReceiveDamage(float value)
         {
-            //if (IsDead) return;
+            if (IsDead) return;
             
             if (applyForwardDamage != null) StopCoroutine(applyForwardDamage);
             if (movement.fallToStand != null) movement.StopCoroutine(movement.fallToStand);
@@ -277,7 +277,7 @@ namespace Player.Control
 
         private void PlayerIsDead()
         {
-            //IsDead = true;
+            IsDead = true;
         }
     }
 }

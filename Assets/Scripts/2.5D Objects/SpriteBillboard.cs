@@ -5,7 +5,8 @@ namespace _2._5D_Objects
     public class SpriteBillboard : MonoBehaviour
     {
         public Transform parentTransform;
-        
+
+        public bool staticBillboard;
         public bool freezeXRotation;
         public bool freezeYRotation;
         public bool freezeZRotation;
@@ -13,7 +14,6 @@ namespace _2._5D_Objects
         public Vector3 freezeValues = new(0, 0, 0);
 
         private Transform mainCamera;
-
 
         private void Start()
         {
@@ -27,13 +27,16 @@ namespace _2._5D_Objects
                 SetCamera();
                 return;
             }
-
-            Vector3 lookDir = (mainCamera.position - transform.position).normalized;
-            Quaternion parentRot = parentTransform ? parentTransform.rotation : new();
-
-            transform.rotation = Quaternion.LookRotation(lookDir);
-            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles - parentRot.eulerAngles);
-
+            
+            if (staticBillboard) 
+                transform.rotation = mainCamera.rotation;
+            else
+            {
+                Quaternion parentRot = parentTransform ? parentTransform.rotation : new();
+                transform.LookAt(mainCamera);
+                transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles - parentRot.eulerAngles);
+            }
+            
             FreezeRotationAxis();
         }
 

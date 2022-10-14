@@ -1,6 +1,8 @@
 using _2._5D_Objects;
 using Player.Control;
+using Stats;
 using UnityEngine;
+using Movement = Player.Control.Movement;
 
 namespace Player.Animations
 {
@@ -28,7 +30,8 @@ namespace Player.Animations
         private static readonly int IsHoldingRun = Animator.StringToHash("IsHoldingRun");
         private static readonly int Hit = Animator.StringToHash("OnHit");
         private static readonly int Stand = Animator.StringToHash("OnStand");
-        
+        private static readonly int Death = Animator.StringToHash("OnDeath");
+
         #endregion
         
         private void OnEnable()
@@ -41,6 +44,7 @@ namespace Player.Animations
             PlayerCombat.playerCombatV3 += OnAttack_V3;
             PlayerCombat.onFinished += OnFinishedAttacking;
             PlayerCombat.onHit += OnHit;
+            PlayerStatus.noHealth += OnDeath;
         }
 
         private void OnDisable()
@@ -53,6 +57,7 @@ namespace Player.Animations
             PlayerCombat.playerCombatV3 -= OnAttack_V3;
             PlayerCombat.onFinished -= OnFinishedAttacking;
             PlayerCombat.onHit -= OnHit;
+            PlayerStatus.noHealth -= OnDeath;
         }
 
         private void Update()
@@ -76,6 +81,12 @@ namespace Player.Animations
         private void OnAttack_V3() => animator.SetTrigger(OnAttackV3);
         private void OnHit() => animator.SetTrigger(Hit);
         private void OnStand() => animator.SetTrigger(Stand);
+
+        private void OnDeath()
+        {
+            animator.SetTrigger(Death);
+            OnDisable();
+        }
         
         private void SetDirections()
         {

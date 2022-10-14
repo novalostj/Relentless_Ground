@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,6 +13,11 @@ namespace Player.Control
             SetCursor(true);
         }
 
+        private void OnDisable()
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+
         private void Update()
         {
             if (Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -20,14 +26,9 @@ namespace Player.Control
             }
         }
 
-        private void ToggleCursor()
-        {
-            mouseIsHidden = !mouseIsHidden;
+        private void ToggleCursor() => SetCursor(!mouseIsHidden);
 
-            Cursor.lockState = mouseIsHidden ? CursorLockMode.Locked : CursorLockMode.None;
-        }
 
-        
         private void SetCursor(bool value)
         {
             mouseIsHidden = value;
